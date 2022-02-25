@@ -12,8 +12,8 @@ import { PizzaService } from './pizza.service';
     MailgunModule.forAsyncRoot({
       useFactory: async () => {
         return {
-          username: 'moazzam',
-          key: '4e89dde30dbd074f4659bcc7ccee5ef1-b2f5ed24-4d95b3e8',
+          username: '',
+          key: '',
         };
       },
     }),

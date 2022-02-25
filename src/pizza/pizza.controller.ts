@@ -17,4 +17,9 @@ export class PizzaController {
   getMenu() {
     return this.pizzaService.findAll();
   }
+
+  @Get('email')
+  async sendEmailToUser() {
+    return await this.pizzaService.sendEmail();
+  }
 }

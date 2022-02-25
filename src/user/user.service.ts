@@ -3,20 +3,26 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './entities/user.entity';
 import { Model } from 'mongoose';
-import { CreateUserDto } from './dto/create-user.dto';
 import { JwtService } from '@nestjs/jwt';
+import { Cart } from 'src/pizza/entities/cart.entity';
+import { Pizza } from 'src/pizza/entities/pizza.entity';
 
 @Injectable()
 export class UserService {
-  usersService: any;
   constructor(
     @InjectModel(User.name)
     private readonly userModel: Model<User>,
     private jwtService: JwtService,
+    @InjectModel(Cart.name)
+    private readonly cartModel: Model<Cart>,
+    @InjectModel(Pizza.name)
+    private readonly pizzaModel: Model<Pizza>,
   ) {}
 
   async findOne(email: string) {
@@ -27,13 +33,13 @@ export class UserService {
     return user;
   }
 
-  async validateUser(username: string, pass: string): Promise<any> {
-    const user = await this.usersService.findOne(username);
-    if (user && user.password === pass) {
+  async validateUser(userObj) {
+    const user = await this.userModel.findOne({ email: userObj.email });
+    if (user && user.password === userObj.password) {
       const { ...result } = user;
       return result;
     }
-    return null;
+    return BadRequestException;
   }
 
   async create(userObj) {
@@ -65,5 +71,27 @@ export class UserService {
 
   async findAll() {
     return await this.userModel.find({}).exec();
+  }
+
+  async addToCart(userObj) {
+    const exist = await this.pizzaModel.findOne({ pizzaName: userObj.pizza });
+    if (exist) {
+      return new this.cartModel({
+        ...userObj,
+      }).save();
+    }
+    return NotFoundException;
+  }
+
+  async removeItem(id: string) {
+    const pizza = await this.cartModel.findOne({ _id: id }).exec();
+    if (!pizza) {
+      throw new HttpException(`Pizza #${id} not found`, HttpStatus.NOT_FOUND);
+    }
+    return pizza.remove();
+  }
+
+  async showCartItems(email) {
+    return await this.cartModel.find({ email: email });
   }
 }

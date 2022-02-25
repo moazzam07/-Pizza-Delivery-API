@@ -7,6 +7,8 @@ import {
   Query,
   UseGuards,
   UnauthorizedException,
+  Param,
+  HttpStatus,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -31,5 +33,29 @@ export class UserController {
   @Get()
   getUser() {
     return this.userService.findAll();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('addCart')
+  async addToCart(@Body() body) {
+    return await this.userService.addToCart(body);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('delete/:id')
+  async removeItem(@Param('id') id) {
+    return await this.userService.removeItem(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('cart')
+  async showCartItems(@Body('email') body) {
+    return await this.userService.showCartItems(body);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('create-order')
+  async createOrder(@Body('email') body) {
+    return await this.userService.showCartItems(body);
   }
 }
